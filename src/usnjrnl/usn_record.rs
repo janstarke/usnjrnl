@@ -138,7 +138,7 @@ pub struct UsnRecordCommonHeader {
 /// https://docs.microsoft.com/de-de/windows/win32/api/winioctl/ns-winioctl-usn_record_common_header
 #[derive(PackedStruct, Debug, StructFromBytes, PackedSize)]
 #[packed_struct(bit_numbering = "msb0", endian = "lsb")]
-struct BinaryUsnRecordV2 {
+pub struct BinaryUsnRecordV2 {
   pub FileReferenceNumber: u64,
   pub ParentFileReferenceNumber: u64,
   pub Usn: i64,

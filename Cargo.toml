@@ -3,7 +3,7 @@ name = "usnjrnl"
 version = "0.1.0"
 authors = ["Jan Starke <Jan.Starke@t-systems.com>"]
 edition = "2018"
-description = "parses an $UsnJrnl file"
+description = "parses a $UsnJrnl file"
 homepage = "https://www.github.com/janstarke/usnjrnl"
 license-file = "LICENSE"
 
@@ -15,18 +15,13 @@ winstructs = "0.3.0"
 log = "0.4"
 
 ## required to parse binary data
-#from_bytes = "0.1"
 from_bytes = {version="0.2.1", features=["u8_arrays"]}
 from_bytes_derive = "0.2.1"
 memmap = "0.7"
-packed_struct = { version = "0.10", default-features = false, features=["byte_types_256"] }
+packed_struct = "0.10"
 byteorder = "1.4"
 num-traits = "0.2"
 num-derive = "0.3"
 strum = { version = "0.22", features = ["derive"] }
 strum_macros = "0.22"
 chrono = "0.4"
-
-#[profile.dev]
-#debug = true
-#split-debuginfo = "packed"
