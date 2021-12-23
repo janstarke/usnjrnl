@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Debug)]
 pub enum UsnReaderError {
     IO(std::io::Error),
     SyntaxError(String),

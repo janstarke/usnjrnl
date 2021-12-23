@@ -2,11 +2,12 @@ use from_bytes::*;
 use from_bytes_derive::*;
 use packed_struct::prelude::*;
 use chrono::{DateTime, Utc};
+use std::io::{Read, Seek, SeekFrom};
 use winstructs::timestamp::WinTimestamp;
 use winstructs::ntfs::mft_reference::MftReference;
 
-use super::usn_reader_error::*;
-use super::usn_reason::*;
+use crate::usn_reader_error::*;
+use crate::usn_reason::*;
 
 #[derive(Debug)]
 pub struct CommonUsnRecord {
@@ -14,28 +15,31 @@ pub struct CommonUsnRecord {
   pub data: UsnRecordData,
 }
 
-fn utf16_from_slice(slice: &[u8], mut offset: usize, characters: usize) -> String {
+fn utf16_from_slice<RS>(slice: &mut RS, offset: usize, characters: usize) -> Result<String, UsnReaderError> where RS: Read + Seek {
+  let mut name_bytes = vec![0; characters * 2];
+
+  slice.seek(SeekFrom::Start(offset as u64))?;
+  slice.read_exact(&mut name_bytes)?;
+
   let mut name_chars = Vec::new();
-  for _ in 0..characters {
-    name_chars.push(slice[offset] as u16 | ((slice[offset + 1] as u16) << 8 as u8));
-    offset += 2;
+  for idx in 0..characters {
+    name_chars.push(name_bytes[2*idx] as u16 | ((name_bytes[2*idx + 1] as u16) << 8 as u8));
   }
-  String::from_utf16_lossy(&name_chars[..])
+  Ok(String::from_utf16_lossy(&name_chars[..]))
 }
 
 impl CommonUsnRecord {
-  pub fn from(data: &[u8], index: &mut usize) -> std::result::Result<Self, UsnReaderError> {
-    let mut header = *UsnRecordCommonHeader::from_bytes(&data, *index)?;
-    if header.RecordLength == 0 {
+  pub fn from<RS>(data: &mut RS, index: &mut usize) -> std::result::Result<Self, UsnReaderError> where RS: Read + Seek {
+    data.seek(SeekFrom::Start(*index as u64))?;
+    let mut header = *UsnRecordCommonHeader::from_stream(data)?;
+
+    while header.RecordLength == 0 {
       /* looks like a cluster change, round index up to the next cluster */
       *index += 0x1000 - (*index & 0xfff);
 
       /* reread header at new address */
-      header = *UsnRecordCommonHeader::from_bytes(&data, *index)?;
-
-      if header.RecordLength == 0 {
-        return Err(UsnReaderError::NoMoreData);
-      }
+      data.seek(SeekFrom::Start(*index as u64))?;
+      header = *UsnRecordCommonHeader::from_stream(data)?;
     }
 
     let usn_data = match header.MajorVersion {
@@ -136,6 +140,7 @@ pub struct UsnRecordCommonHeader {
 /// which is common through USN_RECORD_V2, USN_RECORD_V3 and USN_RECORD_V4.
 ///
 /// https://docs.microsoft.com/de-de/windows/win32/api/winioctl/ns-winioctl-usn_record_common_header
+#[allow(non_snake_case)]
 #[derive(PackedStruct, Debug, StructFromBytes, PackedSize)]
 #[packed_struct(bit_numbering = "msb0", endian = "lsb")]
 pub struct BinaryUsnRecordV2 {
@@ -153,6 +158,7 @@ pub struct BinaryUsnRecordV2 {
 }
 
 #[derive(Debug)]
+#[allow(non_snake_case)]
 pub struct UsnRecordV2 {
   pub FileReferenceNumber: MftReference,
   pub ParentFileReferenceNumber: MftReference,
@@ -166,15 +172,11 @@ pub struct UsnRecordV2 {
 }
 
 impl UsnRecordV2 {
-  fn from(data: &[u8], record_index: usize) -> std::result::Result<Self, UsnReaderError> {
-    let record =
-      BinaryUsnRecordV2::from_bytes(&data, record_index + UsnRecordCommonHeader::packed_size())?;
+  fn from<RS> (data: &mut RS, record_index: usize) -> std::result::Result<Self, UsnReaderError> where RS: Read + Seek {
+    data.seek(SeekFrom::Start((record_index + UsnRecordCommonHeader::packed_size()) as u64))?;
+    let record = BinaryUsnRecordV2::from_stream(data)?;
 
-    let filename = utf16_from_slice(
-      data,
-      record_index + record.FileNameOffset as usize,
-      (record.FileNameLength / 2) as usize,
-    );
+    let filename = utf16_from_slice(data, record_index + record.FileNameOffset as usize, (record.FileNameLength / 2) as usize)?;
 
     let file_reference = MftReference::from(record.FileReferenceNumber);
     let parent_reference = MftReference::from(record.ParentFileReferenceNumber);
