@@ -76,11 +76,17 @@ impl RecordFormat for BodyfileFormatter {
 struct JsonFormatter {}
 impl RecordFormat for JsonFormatter {
     fn fmt(&self, record: &CommonUsnRecord) -> String {
-        let json = json!({
+        let mut json = json!({
             "timestamp": record.data.timestamp(),
             "filename": record.data.filename(),
             "reason": record.data.reason().to_string(),
         });
+
+        #[allow(irrefutable_let_patterns)]
+        if let UsnRecordData::V2(ref v2record) = record.data {
+            json["inode"] = serde_json::Value::String(format!("{}", v2record.FileReferenceNumber.entry));
+            json["parent"] = serde_json::Value::String(format!("{}", v2record.ParentFileReferenceNumber.entry));
+        }
         json.to_string()
     }
 }
