@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 use from_bytes::*;
 use from_bytes_derive::*;
 use packed_struct::prelude::*;
@@ -140,7 +141,6 @@ pub struct UsnRecordCommonHeader {
 /// which is common through USN_RECORD_V2, USN_RECORD_V3 and USN_RECORD_V4.
 ///
 /// https://docs.microsoft.com/de-de/windows/win32/api/winioctl/ns-winioctl-usn_record_common_header
-#[allow(non_snake_case)]
 #[derive(PackedStruct, Debug, StructFromBytes, PackedSize)]
 #[packed_struct(bit_numbering = "msb0", endian = "lsb")]
 pub struct BinaryUsnRecordV2 {
@@ -158,7 +158,6 @@ pub struct BinaryUsnRecordV2 {
 }
 
 #[derive(Debug)]
-#[allow(non_snake_case)]
 pub struct UsnRecordV2 {
   pub FileReferenceNumber: MftReference,
   pub ParentFileReferenceNumber: MftReference,
