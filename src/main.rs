@@ -45,7 +45,14 @@ pub fn main() -> Result<()> {
         Box::new(JsonFormatter{})
     };
     for entry in reader.into_iter() {
-        println!("{}", formatter.fmt(&entry));
+        match entry {
+            Ok(e) => {
+                println!("{}", formatter.fmt(&e));
+            }
+            Err(why) => {
+                log::error!("{}", why);
+            }
+        }
     }
 
     Ok(())

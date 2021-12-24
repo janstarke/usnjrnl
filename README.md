@@ -6,7 +6,7 @@ in your `Cargo.toml`:
 
 ```ini
 [dependencies]
-usnjrnl = {version="0.2.0", default-features=false }
+usnjrnl = {version="0.3.0", default-features=false }
 ```
 
 ## Installation
@@ -41,8 +41,15 @@ use usnjrnl::{UsnJrnlReader, CommonUsnRecord, UsnRecordData};
 
 let reader = UsnJrnlReader::from("$UsnJrnl:$J")?;
 for entry in reader.into_iter() {
-    println!("{}: {}",
-        entry.data.filename(),
-        entry.data.reasons();
+    match entry {
+        Ok(e) => {
+            println!("{}: {}",
+                e.data.filename(),
+                e.data.reasons();
+        }
+        Err(why) => {
+            log::error!("{}", why);
+        }
+    }
 }
 ```

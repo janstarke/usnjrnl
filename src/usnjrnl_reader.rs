@@ -27,7 +27,7 @@ impl UsnJrnlReader {
 }
 
 impl IntoIterator for UsnJrnlReader {
-    type Item = CommonUsnRecord;
+    type Item = std::result::Result<CommonUsnRecord, UsnReaderError>;
     type IntoIter = UsrJrnlIterator<Cursor<Mmap>>;
     fn into_iter(self) -> Self::IntoIter {
         Self::IntoIter::from(Cursor::new(self.data))
@@ -53,7 +53,6 @@ fn next_from_data<RS>(data: &mut RS, index: &mut usize) -> std::result::Result<C
             Err(UsnReaderError::NoMoreData) => Err(UsnReaderError::NoMoreData),
 
             Err(why) => {
-                log::error!("error while parsing logfile: {}", why);
                 Err(why)
             }
         }
@@ -64,29 +63,26 @@ fn next_from_data<RS>(data: &mut RS, index: &mut usize) -> std::result::Result<C
 
 pub struct UsrJrnlIterator<RS> where RS: Read + Seek {
     data: RS,
-    current_offset: usize,
-    last_error: Option<UsnReaderError>
+    current_offset: usize
 }
 
 impl<RS> UsrJrnlIterator<RS> where RS: Read + Seek {
     pub fn from(data: RS) -> Self {
         Self {
             data,
-            current_offset: 0,
-            last_error: None
+            current_offset: 0
         }
     }
 }
 
 impl<RS> Iterator for UsrJrnlIterator<RS> where RS: Read + Seek {
-    type Item = CommonUsnRecord;
+    type Item = std::result::Result<CommonUsnRecord, UsnReaderError>;
     fn next(&mut self) -> Option<Self::Item> {
-        match next_from_data(&mut self.data, &mut self.current_offset) {
-            Ok(result) => Some(result),
-            Err(why) => {
-                self.last_error = Some(why);
-                None
-            }
+        let next_record = next_from_data(&mut self.data, &mut self.current_offset);
+        if let Err(UsnReaderError::NoMoreData) = next_record {
+            None
+        } else {
+            Some(next_record)
         }
     }
 }
