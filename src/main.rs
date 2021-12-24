@@ -2,7 +2,7 @@ use anyhow::{Result, anyhow};
 use clap::{App, Arg};
 use std::path::PathBuf;
 use simplelog::{TermLogger, LevelFilter, Config, TerminalMode, ColorChoice};
-use usnjrnl::{UsnJrnlReader, CommonUsnRecord};
+use usnjrnl::{UsnJrnlReader, CommonUsnRecord, UsnRecordData};
 use bodyfile::Bodyfile3Line;
 use serde_json::json;
 
@@ -61,9 +61,14 @@ impl RecordFormat for BodyfileFormatter {
         let message = format!("{} (UsnJrnl reason: {})",
                         record.data.filename(),
                         record.data.reason());
-        let bf_line = Bodyfile3Line::new()
+        let mut bf_line = Bodyfile3Line::new()
             .with_name(&message)
             .with_mtime(record.data.timestamp().timestamp());
+
+        #[allow(irrefutable_let_patterns)]
+        if let UsnRecordData::V2(ref v2record) = record.data {
+            bf_line = bf_line.with_owned_inode(format!("{}", v2record.FileReferenceNumber.entry));
+        }
         bf_line.to_string()
     }
 }
