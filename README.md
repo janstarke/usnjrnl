@@ -9,24 +9,15 @@ in your `Cargo.toml`:
 usnjrnl = {version="0.2.0", default-features=false }
 ```
 
-## The library
+## Installation
 
-### Usage
-
-```rust
-use usnjrnl::{UsnJrnlReader, CommonUsnRecord, UsnRecordData};
-
-let reader = UsnJrnlReader::from("$UsnJrnl:$J")?;
-for entry in reader.into_iter() {
-    println!("{}: {}",
-        entry.data.filename(),
-        entry.data.reasons();
-}
+```shell
+cargo install usnjrnl
 ```
 
-## `usnjrnl_dump`
+## Usage 
 
-### Usage
+### `usnjrnl_dump` binary
 
 ```
 USAGE:
@@ -39,4 +30,19 @@ FLAGS:
 
 ARGS:
     <USNJRNL_FILE>    path to $UsnJrnl:$J file
+```
+
+I suggest to always correlate MFT entry numbers to entries in a real `$MFT` file. This can be done automatically with <https://github.com/janstarke/mft2bodyfile>.
+
+### `usnjrnl` library
+
+```rust
+use usnjrnl::{UsnJrnlReader, CommonUsnRecord, UsnRecordData};
+
+let reader = UsnJrnlReader::from("$UsnJrnl:$J")?;
+for entry in reader.into_iter() {
+    println!("{}: {}",
+        entry.data.filename(),
+        entry.data.reasons();
+}
 ```
