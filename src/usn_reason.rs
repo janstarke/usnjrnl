@@ -1,13 +1,11 @@
-use from_bytes::*;
-use from_bytes_derive::*;
-use packed_struct::prelude::*;
+
 use std::str;
 use std::fmt;
 use std::fmt::Debug;
 use std::string::ToString;
-use num_derive::FromPrimitive;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
+use binread::prelude::*;
 
 pub struct UsnReason {
   value: u32,
@@ -45,8 +43,8 @@ impl fmt::Display for UsnReason {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(PrimitiveEnum_u32, PackedSize_u32, FromPrimitive,
-    Clone, Copy, PartialEq, Debug, EnumIter, strum_macros::Display)]
+#[derive(BinRead, EnumIter, strum_macros::Display, Clone, Copy, Debug)]
+#[br(repr=u32, little)]
 pub enum UsnReasonValue {
   /// A user has either changed one or more file or directory attributes (for
   /// example, the read-only, hidden, system, archive, or sparse attribute), or

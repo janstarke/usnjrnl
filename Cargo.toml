@@ -1,6 +1,6 @@
 [package]
 name = "usnjrnl"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Jan Starke <Jan.Starke@t-systems.com>"]
 edition = "2018"
 description = "parses a $UsnJrnl file"
@@ -21,21 +21,18 @@ path="src/main.rs"
 required-features = ["usnjrnl_dump"]
 
 [dependencies]
-mft = "0.5"
+mft = ">=0.5"
 winstructs = "0.3.0"
 log = "0.4"
 
 ## required to parse binary data
-from_bytes = {version="0.2.2", features=["u8_arrays"]}
-from_bytes_derive = "0.2.2"
 memmap = "0.7"
-packed_struct = "0.10"
-byteorder = "1.4"
 num-traits = "0.2"
 num-derive = "0.3"
 strum = { version = "0.22", features = ["derive"] }
 strum_macros = "0.22"
 chrono = "0.4"
+binread = "2.2"
 
 bodyfile = {version="0.1", optional=true}
 clap = {version="2", optional=true}
