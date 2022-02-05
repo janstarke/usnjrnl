@@ -21,8 +21,15 @@ impl UsnJrnlReader  {
         let file = File::open(file_path)?;
 
         #[cfg(feature = "gzip")]
-        if file_path.ends_with(".gz") {
-            return Ok(Box::new(GzDecoder::new(file)));
+        match file_path.file_name() {
+            Some(filename) => {
+                if filename.to_string_lossy().ends_with(".gz") {
+                    return Ok(Box::new(GzDecoder::new(file)));
+                }
+            }
+            None => {
+                return Err(Error::new(ErrorKind::InvalidInput, "missing filename"))
+            }
         }
 
         Ok(Box::new(file))
