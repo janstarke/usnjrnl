@@ -29,7 +29,7 @@ FLAGS:
     -V, --version     Prints version information
 
 ARGS:
-    <USNJRNL_FILE>    path to $UsnJrnl:$J file
+    <USNJRNL_FILE>    path to $UsnJrnl:$J file (file ending with .gz will be treated as being gzipped)
 ```
 
 I suggest to always correlate MFT entry numbers to entries in a real `$MFT` file. This can be done automatically with <https://github.com/janstarke/mft2bodyfile>.

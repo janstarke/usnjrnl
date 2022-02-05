@@ -13,13 +13,19 @@ pub fn main() -> Result<()> {
         TerminalMode::Stderr,
         ColorChoice::Auto);
     
+    #[cfg(feature = "gzip")]
+    let filename_help = "path to $UsnJrnl:$J file (file ending with .gz will be treated as being gzipped)";
+
+    #[cfg(not(feature = "gzip"))]
+    let filename_help = "path to $UsnJrnl:$J file";
+
     let app = App::new(env!("CARGO_BIN_NAME"))
         .version(env!("CARGO_PKG_VERSION"))
         .author(env!("CARGO_PKG_AUTHORS"))
         .about(env!("CARGO_PKG_DESCRIPTION"))
         .arg(
             Arg::with_name("USNJRNL_FILE")
-                .help("path to $UsnJrnl:$J file")
+                .help(filename_help)
                 .required(true)
                 .multiple(false)
                 .takes_value(true),
