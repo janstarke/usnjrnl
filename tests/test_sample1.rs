@@ -3,12 +3,14 @@ use std::path::PathBuf;
 
 #[test]
 fn test_sample1() -> Result<(), UsnReaderError> {
-    let reader = UsnJrnlReader::from(&get_sample_file("sample1.bin"))?;
+    let reader1 = UsnJrnlReader::from(&get_sample_file("sample1.bin"))?;
+    let reader2 = UsnJrnlReader::from(&get_sample_file("sample1.bin"))?;
 
-    let count1 = reader.iter().count();
+
+    let count1 = reader1.into_iter().count();
 
     let  mut count2 = 0;
-    for entry in reader.into_iter() {
+    for entry in reader2.into_iter() {
         // this failes because of the last entry
         //assert!(entry.is_ok());
         if let Ok(entry) = entry {

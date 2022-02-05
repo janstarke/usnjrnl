@@ -24,6 +24,7 @@ impl CommonUsnRecord {
     while header.RecordLength == 0 {
       /* looks like a cluster change, round index up to the next cluster */
       *index += 0x1000 - (*index & 0xfff);
+      log::debug!("found end of cluster, seeking to {}", index);
 
       /* reread header at new address */
       data.seek(SeekFrom::Start(*index as u64))?;

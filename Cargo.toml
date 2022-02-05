@@ -12,8 +12,9 @@ name="usnjrnl"
 path="src/lib.rs"
 
 [features]
-default = ["usnjrnl_dump"]
+default = ["usnjrnl_dump","gzip"]
 usnjrnl_dump = ["clap", "anyhow", "simplelog", "bodyfile", "serde_json"]
+gzip = ["flate2"]
 
 [[bin]]
 name="usnjrnl_dump"
@@ -24,6 +25,7 @@ required-features = ["usnjrnl_dump"]
 mft = ">=0.5"
 winstructs = "0.3.0"
 log = "0.4"
+flate2 = {version = "1.0.22", optional=true}
 
 ## required to parse binary data
 memmap = "0.7"
