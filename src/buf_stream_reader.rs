@@ -20,7 +20,7 @@ impl<R> BufStreamReader<R> where R: Read {
         })
     }
 
-    pub fn read_next_buffer(&mut self) -> Result<()> {
+    fn read_next_buffer(&mut self) -> Result<()> {
         let (bytes, cursor) = Self::initialize_buffer(&mut self.reader)?;
         self.offset += self.buffer_size as u64;
         self.cursor = cursor;
@@ -71,12 +71,13 @@ impl<R> Seek for BufStreamReader<R> where R: Read {
                 Ok(self.cursor.seek(SeekFrom::Start(pos - self.offset))? + self.offset)
             }
 
-            SeekFrom::End(_) => {
-                unimplemented!();
-            }
-
             SeekFrom::Current(pos) => {
                 Ok(self.cursor.seek(SeekFrom::Current(pos))? + self.offset)
+            }
+
+            // We don't know where the end of a stream is, so this cannot be implemented
+            SeekFrom::End(_) => {
+                unimplemented!();
             }
         }
     }
