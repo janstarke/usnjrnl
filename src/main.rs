@@ -8,7 +8,7 @@ use serde_json::json;
 
 pub fn main() -> Result<()> {
     let _ = TermLogger::init(
-        LevelFilter::Warn,
+        LevelFilter::Debug,
         Config::default(),
         TerminalMode::Stderr,
         ColorChoice::Auto);

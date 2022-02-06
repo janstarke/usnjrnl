@@ -1,6 +1,6 @@
 [package]
 name = "usnjrnl"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Jan Starke <Jan.Starke@t-systems.com>"]
 edition = "2018"
 description = "parses a $UsnJrnl file"

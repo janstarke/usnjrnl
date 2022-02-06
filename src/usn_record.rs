@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 use chrono::{DateTime, Utc};
-use std::io::{Read, Seek, SeekFrom};
+use std::io::{Read, Seek};
 use winstructs::timestamp::WinTimestamp;
 use winstructs::ntfs::mft_reference::MftReference;
 use binread::prelude::*;
@@ -17,17 +17,18 @@ pub struct CommonUsnRecord {
 }
 
 impl CommonUsnRecord {
-  pub fn from<RS>(data: &mut RS, index: &mut usize) -> std::result::Result<Self, UsnReaderError> where RS: Read + Seek {
-    data.seek(SeekFrom::Start(*index as u64))?;
+  pub fn from<RS>(data: &mut RS) -> std::result::Result<Self, UsnReaderError> where RS: Read + Seek {
     let mut header: UsnRecordCommonHeader = data.read_le()?;
 
     while header.RecordLength == 0 {
       /* looks like a cluster change, round index up to the next cluster */
-      *index += 0x1000 - (*index & 0xfff);
-      log::debug!("found end of cluster, seeking to {}", index);
+      let current_position = data.stream_position()?;
+      let diff = 0x1000 - (current_position & 0xfff);
+
+      /* forward reader to new offset */
+      Self::ignore_bytes(data, diff as usize)?;
 
       /* reread header at new address */
-      data.seek(SeekFrom::Start(*index as u64))?;
       header = data.read_le()?;
     }
 
@@ -51,10 +52,26 @@ impl CommonUsnRecord {
       }
     };
 
+    /*
+     * read padding bytes, until the beginning of the next record
+     *  we do this to prevent seeking, which is bad for buffered readers
+     */
+    let reader_position = usn_data.ending_position();
+    let next_record = header.RecordLength as u64 - (reader_position-header.StartingPosition.0);
+    Self::ignore_bytes(data, next_record as usize)?;
+
     Ok(Self {
       header,
       data: usn_data,
     })
+  }
+
+  fn ignore_bytes<R:Read+Seek>(reader: &mut R, count: usize) -> std::io::Result<()> {
+    let mut _buffer = vec![0; count as usize];
+    let bytes = reader.read(&mut _buffer[..])?;
+    assert_eq!(bytes, count as usize);
+    //reader.seek(SeekFrom::Current(count as i64))?;
+    Ok(())
   }
 }
 
@@ -92,20 +109,31 @@ impl UsnRecordData {
       Self::V2(data) => &data.Reason
     }
   }
+
+  pub fn ending_position(&self) -> u64 {
+    match self {
+      Self::V2(data) => data.EndingPosition
+    }
+  }
 }
+
+#[derive(Debug)]
 pub struct CurPos(pub u64);
 
 impl BinRead for CurPos {
     type Args = ();
 
     fn read_options<R: Read + Seek>(reader: &mut R, _ro: &ReadOptions, _args: Self::Args) -> BinResult<Self> {
-        Ok(CurPos(reader.seek(SeekFrom::Current(0))?))
+        Ok(CurPos(reader.stream_position()?))
     }
 }
 
-#[derive(BinRead, Debug)]
+#[derive_binread]
+#[derive(Debug)]
 #[br(little)]
 pub struct UsnRecordCommonHeader {
+  StartingPosition: CurPos,
+
   /// The total length of a record, in bytes.
   ///
   /// Because USN record is a variable size, the RecordLength member should be
@@ -186,6 +214,8 @@ pub struct BinaryUsnRecordV2 {
   /// any future versions of USN_RECORD_V2.
   #[br(offset=StartingPosition.0 + (FileNameOffset as u64), count=FileNameLength/2)]
   pub FileName: Vec<u16>,
+
+  EndingPosition: CurPos,
 }
 
 #[derive(Debug)]
@@ -199,6 +229,7 @@ pub struct UsnRecordV2 {
   pub SecurityId: u32,
   pub FileAttributes: u32,
   pub FileName: String,
+  pub EndingPosition: u64,
 }
 
 impl UsnRecordV2 {
@@ -222,6 +253,7 @@ impl UsnRecordV2 {
       SecurityId: record.SecurityId,
       FileAttributes: record.FileAttributes,
       FileName: filename,
+      EndingPosition: record.EndingPosition.0
     })
   }
 }
