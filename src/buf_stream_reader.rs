@@ -68,6 +68,9 @@ impl<R> Seek for BufStreamReader<R> where R: Read {
     fn seek(&mut self, seek_from: SeekFrom) -> Result<u64> {
         match seek_from {
             SeekFrom::Start(pos) => {
+                if pos < self.offset {
+                    return Err(Error::new(ErrorKind::InvalidData, "cannot seek to discarded buffer"));
+                }
                 Ok(self.cursor.seek(SeekFrom::Start(pos - self.offset))? + self.offset)
             }
 
