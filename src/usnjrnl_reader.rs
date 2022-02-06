@@ -116,8 +116,8 @@ impl<R> Seek for ForwardBufferedReader<R> where R: Read {
                 Ok(self.cursor.seek(SeekFrom::Start(pos - self.offset))? + self.offset)
             }
 
-            SeekFrom::End(pos) => {
-                Ok(self.cursor.seek(SeekFrom::End(pos))? + self.offset)
+            SeekFrom::End(_) => {
+                unimplemented!();
             }
 
             SeekFrom::Current(pos) => {
