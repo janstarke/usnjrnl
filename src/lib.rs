@@ -8,4 +8,4 @@ mod usn_reader_error;
 pub use usn_reader_error::UsnReaderError;
 
 mod usn_reason;
-mod buf_stream_reader;
+pub mod buf_stream_reader;
