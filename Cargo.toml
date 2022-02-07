@@ -1,6 +1,6 @@
 [package]
 name = "usnjrnl"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Jan Starke <Jan.Starke@t-systems.com>"]
 edition = "2018"
 description = "parses a $UsnJrnl file"
@@ -26,6 +26,7 @@ mft = ">=0.5"
 winstructs = "0.3.0"
 log = "0.4"
 flate2 = {version = "1.0.22", optional=true}
+buf_stream_reader = "0.1"
 
 ## required to parse binary data
 memmap = "0.7"

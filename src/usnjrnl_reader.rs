@@ -2,7 +2,7 @@ use crate::{CommonUsnRecord, UsnReaderError};
 use std::io::{Result, Read, Seek, ErrorKind, Error};
 use std::fs::File;
 use std::path::PathBuf;
-use crate::buf_stream_reader::BufStreamReader;
+use buf_stream_reader::BufStreamReader;
 
 #[cfg(feature = "gzip")]
 use flate2::read::GzDecoder;
