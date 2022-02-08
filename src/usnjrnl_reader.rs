@@ -42,7 +42,7 @@ impl IntoIterator for UsnJrnlReader {
     type Item = std::result::Result<CommonUsnRecord, UsnReaderError>;
     type IntoIter = UsrJrnlIterator<BufStreamReader<Box<dyn Read>>>;
     fn into_iter(self) -> Self::IntoIter {
-        Self::IntoIter::from(BufStreamReader::new(self.reader, 4096).unwrap())
+        Self::IntoIter::from(BufStreamReader::new(self.reader, 4096))
     }
 }
 
