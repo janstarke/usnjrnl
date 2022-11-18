@@ -1,6 +1,6 @@
 [package]
 name = "usnjrnl"
-version = "0.4.3"
+version = "0.4.4"
 authors = ["Jan Starke <Jan.Starke@t-systems.com>"]
 edition = "2018"
 description = "parses a $UsnJrnl file"
@@ -32,13 +32,13 @@ buf_stream_reader = "0.2"
 memmap = "0.7"
 num-traits = "0.2"
 num-derive = "0.3"
-strum = { version = "0.22", features = ["derive"] }
-strum_macros = "0.22"
+strum = { version = "0.24", features = ["derive"] }
+strum_macros = "0.24"
 chrono = "0.4"
 binread = "2.2"
 
 bodyfile = {version="0.1", optional=true}
 clap = {version="2", optional=true}
 anyhow = {version="1.0", optional=true}
-simplelog = {version="0.10", optional=true}
+simplelog = {version="0.12", optional=true}
 serde_json = {version="1.0", optional=true}

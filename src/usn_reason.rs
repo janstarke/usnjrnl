@@ -45,6 +45,7 @@ impl fmt::Display for UsnReason {
 #[allow(non_camel_case_types)]
 #[derive(BinRead, EnumIter, strum_macros::Display, Clone, Copy, Debug)]
 #[br(repr=u32, little)]
+#[repr(u32)]
 pub enum UsnReasonValue {
   /// A user has either changed one or more file or directory attributes (for
   /// example, the read-only, hidden, system, archive, or sparse attribute), or
